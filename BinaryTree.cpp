@@ -17,7 +17,7 @@ MorseBinaryTree::MorseBinaryTree() {
 }
 
 MorseBinaryTree::~MorseBinaryTree() {
-	
+	deleteNode(this->root);
 }
 
 // Inserts node based on morse representation
@@ -67,37 +67,53 @@ MorseBinaryTree::Node* MorseBinaryTree::findNode(Node*& root, char ch) {
 	return foundNode;
 }
 
-// Everything below needs work
+// Returns true if item is found in the tree, false otherwise
 
 bool MorseBinaryTree::findItem(char ch) {
-	Node* searchNode = new Node();
-	searchNode->data = ch;
+	Node* node = findNode(this->root, ch);
 
-	return search(this->root, ch);
-}
-
-bool MorseBinaryTree::search(Node* root, char ch) {
-	if (root == nullptr)
+	if (node == nullptr)
 		return false;
-	if (root->data == ch)
-		return true;
-	else if (ch <= root->data)
-		search(root->left, ch);
 	else
-		search(root->right, ch);
+		return true;
 }
 
 // Deletes specified node/subtree
 
 void MorseBinaryTree::removeItem(char ch) {
-	deleteNode(findNode(this->root, ch));
+	queue<Node*> q;
+	q.push(this->root);
+
+	while (!q.empty()) {
+		Node* currentNode = q.front();
+		if (currentNode->left == nullptr && currentNode->right == nullptr)
+			continue;
+		if (currentNode->left->data == ch) {
+			currentNode->left = nullptr;
+			deleteNode(currentNode->left);
+			return;
+		}
+		if (currentNode->right->data == ch) {
+			currentNode->right = nullptr;
+			deleteNode(currentNode->right);
+			return;
+		}
+		q.pop();
+
+		if (currentNode->left != nullptr)
+			q.push(currentNode->left);
+
+		if (currentNode->right != nullptr)
+			q.push(currentNode->right);
+	}
 }
 
-// performs deletion
+// Performs deletion
 
 void MorseBinaryTree::deleteNode(Node* nodePtr) {
 	if (nodePtr == nullptr)
 		return;
+	// Delete all children before root
 	deleteNode(nodePtr->left);
 	deleteNode(nodePtr->right);
 	delete nodePtr;
@@ -107,7 +123,7 @@ void MorseBinaryTree::deleteNode(Node* nodePtr) {
 
 void MorseBinaryTree::printLevelOrder() const {
 	queue<Node*> q;
-	q.push(root);
+	q.push(this->root);
 
 	std::cout << "Level Order Traveral:";
 	while (!q.empty()) {
@@ -138,7 +154,7 @@ char MorseBinaryTree::morseToAlpha(const char* repr) {
 }
 
 char MorseBinaryTree::morseSearch(Node*& root, const char* repr) {
-	if (repr == '\0' || repr[1] == '/' || repr[1] == ' ') {
+	if (*repr == '\0' || repr[1] == '/' || repr[1] == ' ') {
 		return root->data;
 	}
 	else if (*repr == '*') {

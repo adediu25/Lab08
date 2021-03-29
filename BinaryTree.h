@@ -13,7 +13,6 @@ private:
 	};
 	Node* root;
 	void insert(Node*&, Node*&, const char*);
-	bool search(Node*, char);
 	void deleteNode(Node*);
 	char morseSearch(Node*&, const char*);
 	Node* findNode(Node*&, char);

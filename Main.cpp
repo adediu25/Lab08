@@ -4,31 +4,9 @@
 using namespace::std;
 
 int main() {
-	//********Task 1 test start********
-
-	/*BstNode* root = NULL;
-	root = root->Insert(root, 10);
-	root = root->Insert(root, 20);
-	root = root->Insert(root, 30);
-	root = root->Insert(root, 40);
-	root = root->Insert(root, 50);
-
-	root = root->Delete(root, 50);
-
-	int number;
-	cout << "Insert a number: ";
-	cin >> number;
-	if (root->Search(root, number) == true) {
-		cout << "Number found \n";
-	}
-	else {
-		cout << "Number not found \n";
-	}*/
-
-	//********Task 1 test end********
-
 	MorseBinaryTree morseTree = MorseBinaryTree();
 
+	// Add all characters to morse tree
 	morseTree.insertItem('E', "*");
 	morseTree.insertItem('T', "-");
 	morseTree.insertItem('I', "**");
@@ -58,12 +36,19 @@ int main() {
 
 	morseTree.printLevelOrder();
 
-	cout << morseTree.morseToAlpha("-*-*") << endl;
+	cout << morseTree.findItem('9') << endl;
+
+	morseTree.removeItem('T');
+	morseTree.printLevelOrder();
+
+
+
+	/*cout << morseTree.morseToAlpha("-*-*") << endl;
 
 	const char* morse = "*- *--* *--* *-** *";
 
 	while (*morse != '\0')
-		cout << morseTree.morseToAlpha(morse);
+		cout << morseTree.morseToAlpha(morse);*/
 
 	return 0;
 }
