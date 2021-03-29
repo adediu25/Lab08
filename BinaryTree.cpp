@@ -1,6 +1,8 @@
 #include "BinaryTree.h"
 #include <queue>
 #include <iostream>
+#include <stack>
+#include <vector>
 
 MorseBinaryTree::Node::Node() {
 	this->data = '\0';
@@ -28,7 +30,7 @@ void MorseBinaryTree::insertItem(char ch, const char* repr) {
 	insert(this->root, newNode, repr);
 }
 
-// Performs insertion
+// Performs insertion recursively
 
 void MorseBinaryTree::insert(Node*& root, Node*& newNode, const char* repr) {
 	if (root == nullptr) {
@@ -78,7 +80,7 @@ bool MorseBinaryTree::findItem(char ch) {
 		return true;
 }
 
-// Deletes specified node/subtree
+// Calls deletion of specified node and sets corresponding pointer to null
 
 void MorseBinaryTree::removeItem(char ch) {
 	queue<Node*> q;
@@ -108,7 +110,7 @@ void MorseBinaryTree::removeItem(char ch) {
 	}
 }
 
-// Performs deletion
+// Performs deletion, recursively deleting all children first
 
 void MorseBinaryTree::deleteNode(Node* nodePtr) {
 	if (nodePtr == nullptr)
@@ -140,23 +142,130 @@ void MorseBinaryTree::printLevelOrder() const {
 	std::cout << std::endl;
 }
 
-char MorseBinaryTree::morseToAlpha(const char* repr) {
-	if (*repr == ' ') {
-		repr++;
-		return '\0';
+// Prints decoded morse string
+
+void MorseBinaryTree::morseToAlpha(const char* repr) {
+	queue<char> translation; // queue for printing final string
+
+	// Iterate through morse sting
+	while (*repr != '\0') {
+		// Print nothing if space
+		if (*repr == ' ') {
+			repr++;
+		}
+		// Print space if slash appears
+		else if (*repr == '/') {
+			repr++;
+			translation.push(' ');
+		}
+		// Print character after search using morse representation
+		else
+			translation.push(morseSearch(this->root, repr));
 	}
-	else if (*repr == '/') {
-		repr++;
-		return ' ';
+
+	// Print string
+	while (!translation.empty()) {
+		char c = translation.front();
+		std::cout << c;
+		translation.pop();
 	}
-	else
-		return morseSearch(this->root, repr);
+	std::cout << endl;
 }
 
-char MorseBinaryTree::morseSearch(Node*& root, const char* repr) {
-	if (*repr == '\0' || repr[1] == '/' || repr[1] == ' ') {
-		return root->data;
+// returns true if ch is in given tree and recursively adds path to the stack path
+// performs path search using inorder traversal
+
+bool MorseBinaryTree::pathHelper(Node*& root, stack<char>& path, char ch, char dir) {
+	if (root == nullptr)
+		return false;
+
+	path.push(dir);
+
+	if (root->data == ch)
+		return true;
+
+	if (pathHelper(root->left, path, ch, '*') || pathHelper(root->right, path, ch, '-'))
+		return true;
+	
+	path.pop();
+	return false;
+}
+
+// Prints encoded version of str in morse,
+
+void MorseBinaryTree::alphaToMorse(const char* str) {
+	stack<char> path;  // Stack for path to each char
+	queue<char> printQueue;  // Queue to print all chars at the end
+
+	// Loop through string
+	while (*str != '\0') {
+		// Print a slash in morse for spaces
+		if (*str == ' ') {
+			printQueue.push('/');
+			str++;
+		}
+		else {
+			stack<char> throwAway;
+			stack<char> temp;
+			if (pathHelper(this->root->left, throwAway, *str, '*')) {
+				// Path to character is in the path stack
+				pathHelper(this->root->left, path, *str, '*');
+				
+				// Push morse characters to printQueue in the correct order
+				while (!path.empty()) {
+					temp.push(path.top());
+					path.pop();
+				}
+				while (!temp.empty()) {
+					printQueue.push(temp.top());
+					temp.pop();
+				}
+			}
+			else {
+				// Path to character is in the path stack
+				pathHelper(this->root->right, path, *str, '-');
+				
+				// Push morse characters to printQueue in the correct order
+				while (!path.empty()) {
+					temp.push(path.top());
+					path.pop();
+				}
+				while (!temp.empty()) {
+					printQueue.push(temp.top());
+					temp.pop();
+				}
+			}
+			// Print a space in the morse string between each alpha character
+			if (str[1] != ' ')
+				printQueue.push(' ');
+			str++; 
+		}
 	}
+
+	// Print morse string
+	while (!printQueue.empty()) {
+		std::cout << printQueue.front();
+		printQueue.pop();
+	}
+
+	std::cout << std::endl;
+}
+
+// Traverses tree based on morse string then returns the character
+
+char MorseBinaryTree::morseSearch(Node*& root, const char*& repr) {
+	// End search if morse sequence is ending
+	if (repr[1] == ' ' || repr[1] == '/' || repr[1] == '\0') {
+		if (*repr == '*') {
+			repr++;
+			return root->left->data;
+		}
+		else {
+			repr++;
+			return root->right->data;
+		}
+	}
+	// Continue search left or right depending on * or -
 	else if (*repr == '*') {
 		return morseSearch(root->left, ++repr);
 	}
