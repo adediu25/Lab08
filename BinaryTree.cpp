@@ -20,11 +20,15 @@ MorseBinaryTree::~MorseBinaryTree() {
 	
 }
 
+// Inserts node based on morse representation
+
 void MorseBinaryTree::insertItem(char ch, const char* repr) {
 	Node* newNode = new Node(ch);
 
 	insert(this->root, newNode, repr);
 }
+
+// Performs insertion
 
 void MorseBinaryTree::insert(Node*& root, Node*& newNode, const char* repr) {
 	if (root == nullptr) {
@@ -36,6 +40,31 @@ void MorseBinaryTree::insert(Node*& root, Node*& newNode, const char* repr) {
 	else {
 		insert(root->right, newNode, ++repr);
 	}
+}
+
+// Returns a pointer to desired node or nullptr if not found
+
+MorseBinaryTree::Node* MorseBinaryTree::findNode(Node*& root, char ch) {
+	Node* foundNode = nullptr;
+	
+	queue<Node*> q;
+	q.push(root);
+
+	while (!q.empty()) {
+		Node* currentNode = q.front();
+		if (currentNode->data == ch) {
+			foundNode = currentNode;
+			return foundNode;
+		}
+		q.pop();
+
+		if (currentNode->left != nullptr)
+			q.push(currentNode->left);
+
+		if (currentNode->right != nullptr)
+			q.push(currentNode->right);
+	}
+	return foundNode;
 }
 
 // Everything below needs work
@@ -58,27 +87,23 @@ bool MorseBinaryTree::search(Node* root, char ch) {
 		search(root->right, ch);
 }
 
+// Deletes specified node/subtree
+
 void MorseBinaryTree::removeItem(char ch) {
-	deleteNode(root, ch);
+	deleteNode(findNode(this->root, ch));
 }
 
-void MorseBinaryTree::deleteNode(Node* root, char ch) {
-	// If deleting root of tree
-	if (this->root == root) {
-		Node* delNode = root;
-		this->root->right->left = this->root->left;
-		this->root = this->root->right;
-		delete delNode;
-	}
-	else if (root->data == ch) {
-		Node* delNode = root;
-		root->right->left = root->left;
-		root = root->right;
-		delete delNode;
-	}
+// performs deletion
+
+void MorseBinaryTree::deleteNode(Node* nodePtr) {
+	if (nodePtr == nullptr)
+		return;
+	deleteNode(nodePtr->left);
+	deleteNode(nodePtr->right);
+	delete nodePtr;
 }
 
-// This one is fine
+// Level order traversal print
 
 void MorseBinaryTree::printLevelOrder() const {
 	queue<Node*> q;
